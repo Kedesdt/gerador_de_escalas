@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h1>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-people"></i> Funcionários
+                </h5>
+                <h2 class="mb-0">{{ funcionarios|length }}</h2>
+                <a href="{{ url_for('listar_funcionarios') }}" class="btn btn-light btn-sm mt-3">
+                    Ver todos
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-calendar-check"></i> Calendário
+                </h5>
+                <p class="mb-0">Gerenciar escalas</p>
+                <a href="{{ url_for('calendario') }}" class="btn btn-light btn-sm mt-3">
+                    Abrir
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-airplane"></i> Férias
+                </h5>
+                <p class="mb-0">Gerenciar férias</p>
+                <a href="{{ url_for('listar_ferias') }}" class="btn btn-light btn-sm mt-3">
+                    Ver todas
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-eye"></i> Visualização
+                </h5>
+                <p class="mb-0">Painel público</p>
+                <a href="{{ url_for('visualizar_escalas') }}" class="btn btn-light btn-sm mt-3">
+                    Abrir
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="mb-3">Acesso Rápido</h3>
+        <div class="list-group">
+            <a href="{{ url_for('novo_funcionario') }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-plus-circle"></i> Adicionar Novo Funcionário
+            </a>
+            <a href="{{ url_for('nova_ferias') }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-plus-circle"></i> Cadastrar Férias
+            </a>
+            <a href="{{ url_for('calendario') }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar3"></i> Gerenciar Escalas do Mês
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendário de Escalas - Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin-calendario.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-calendar3"></i> Calendário de Escalas</h1>
+    </div>
+    <div class="col-auto">
+        <div class="btn-group">
+            <button class="btn btn-success" onclick="gerarEscala({{ mes }}, {{ ano }})">
+                <i class="bi bi-magic"></i> Gerar Sugestão de Escala
+            </button>
+            <a href="{{ url_for('exportar_pdf', ano=ano, mes=mes) }}" class="btn btn-danger" target="_blank">
+                <i class="bi bi-file-pdf"></i> Exportar PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <div class="btn-group">
+                    <a href="{{ url_for('calendario', ano=ano, mes=mes-1 if mes > 1 else 12) }}" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                    <button class="btn btn-outline-primary disabled">
+                        {{ ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][mes-1] }} {{ ano }}
+                        <br><small class="text-muted">(12/{{ '%02d'|format(mes) }} a 11/{{ '%02d'|format(mes+1 if mes < 12 else 1) }})</small>
+                    </button>
+                    <a href="{{ url_for('calendario', ano=ano, mes=mes+1 if mes < 12 else 1) }}" 
+                       class="btn btn-outline-primary">
+                        Próximo <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="d-flex gap-3 justify-content-end flex-wrap">
+                    <div><span class="badge bg-primary">■</span> Trabalhando</div>
+                    <div><span class="badge bg-warning">■</span> Folga</div>
+                    <div><span class="badge" style="background-color: #f5c2c7; color: #842029;">■</span> Férias</div>
+                    <div><span class="badge bg-danger">■</span> Dia Bloqueado</div>
+                    <div><span class="badge bg-success">■</span> Hoje</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if alertas %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <strong>Atenção!</strong> Existem {{ alertas|length }} alerta(s) pendente(s) neste período.
+    <a href="#alertas-section" class="alert-link">Ver alertas</a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h6>Funcionários Disponíveis:</h6>
+        <div id="funcionarios-list" class="d-flex flex-wrap gap-2">
+            {% for func in funcionarios %}
+            <span class="badge bg-primary" 
+                  style="cursor: move; padding: 6px 10px;"
+                  draggable="true" 
+                  data-funcionario-id="{{ func.id }}"
+                  ondragstart="dragFunc(event)">
+                {{ func.nome }}
+            </span>
+            {% endfor %}
+        </div>
+        <small class="text-muted">💡 Arraste os funcionários para os turnos ou para a área de folga em cada dia</small>
+    </div>
+</div>
+
+<div class="calendar-container">
+    <table class="table calendar-table table-bordered">
+        <thead>
+            <tr>
+                <th>Dom</th>
+                <th>Seg</th>
+                <th>Ter</th>
+                <th>Qua</th>
+                <th>Qui</th>
+                <th>Sex</th>
+                <th>Sáb</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set hoje = now().date() %}
+            
+            {{ render_calendario(primeiro_dia, ultimo_dia, folgas, ferias, dias_bloqueados, escalas_diarias, hoje)|safe }}
+        </tbody>
+    </table>
+</div>
+
+{% if alertas %}
+<div id="alertas-section" class="card mb-4 border-warning mt-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle-fill"></i> 
+            Alertas Pendentes ({{ alertas|length }})
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            {% for alerta in alertas %}
+            <div class="list-group-item
+                {% if alerta['severidade'] == 'critico' %}list-group-item-danger
+                {% elif alerta['severidade'] == 'alerta' %}list-group-item-warning
+                {% else %}list-group-item-info{% endif %}">
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">
+                        {% if alerta['tipo'] == 'excesso_dias' %}
+                            <i class="bi bi-calendar-x"></i> Excesso de Dias Trabalhados
+                        {% elif alerta['tipo'] == 'sem_cobertura' %}
+                            <i class="bi bi-people"></i> Falta de Cobertura
+                        {% endif %}
+                    </h6>
+                    <small>{{ alerta['data_referencia'].strftime('%d/%m/%Y') if alerta['data_referencia'] else 'N/A' }}</small>
+                </div>
+                <p class="mb-1">{{ alerta['mensagem'] }}</p>
+                <small class="text-muted">
+                    Severidade: 
+                    {% if alerta['severidade'] == 'critico' %}🔴 Crítico
+                    {% elif alerta['severidade'] == 'alerta' %}🟡 Alerta
+                    {% else %}🔵 Info{% endif %}
+                </small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% macro render_calendario(primeiro_dia, ultimo_dia, folgas, ferias, dias_bloqueados, escalas_diarias, hoje) %}
+    {% set data_atual = primeiro_dia %}
+    {% set dias_para_mostrar = [] %}
+    
+    {# Coletar todos os dias do período #}
+    {% for i in range(31) %}
+        {% set nova_data = (primeiro_dia.toordinal() + i)|from_ordinal %}
+        {% if nova_data <= ultimo_dia %}
+            {% set _ = dias_para_mostrar.append(nova_data) %}
+        {% endif %}
+    {% endfor %}
+    
+    {# Encontrar o primeiro domingo antes ou igual ao primeiro dia #}
+    {% set primeiro_dia_semana = primeiro_dia.weekday() %}
+    {% set dias_antes = (primeiro_dia_semana + 1) % 7 %}
+    {% set inicio_calendario = (primeiro_dia.toordinal() - dias_antes)|from_ordinal %}
+    
+    {# Gerar calendário semana por semana #}
+    {% set data_cursor = inicio_calendario %}
+    {% for semana_num in range(6) %}
+        <tr>
+        {% for dia_semana in range(7) %}
+            {% set data_atual = (data_cursor.toordinal() + (semana_num * 7) + dia_semana)|from_ordinal %}
+            
+            {% if data_atual < primeiro_dia or data_atual > ultimo_dia %}
+                <td class="text-muted" style="background-color: #f8f9fa;">
+                    <div class="day-number text-muted">{{ data_atual.day }}</div>
+                </td>
+            {% else %}
+                {% set data_str = data_atual.strftime('%Y-%m-%d') %}
+                {% set dia_semana_num = data_atual.weekday() %}
+                {% set eh_fim_de_semana = dia_semana_num == 5 or dia_semana_num == 6 %}
+                
+                {% set eh_bloqueado = namespace(value=False) %}
+                {% for db in dias_bloqueados %}
+                    {% if db.data.strftime('%Y-%m-%d') == data_str %}
+                        {% set eh_bloqueado.value = True %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% set eh_hoje = data_str == hoje.strftime('%Y-%m-%d') %}
+                
+                <td class="{% if eh_bloqueado.value %}blocked-day{% elif eh_hoje %}today{% elif eh_fim_de_semana %}weekend{% endif %}"
+                    ondrop="drop(event)" 
+                    ondragover="allowDrop(event)"
+                    data-date="{{ data_str }}">
+                    
+                    <button class="btn btn-sm btn-block-day {% if eh_bloqueado.value %}btn-danger{% else %}btn-outline-secondary{% endif %}"
+                            onclick="toggleBloqueio('{{ data_str }}')">
+                        <i class="bi bi-{% if eh_bloqueado.value %}lock-fill{% else %}lock{% endif %}"></i>
+                    </button>
+                    
+                    <div class="day-number">{{ data_atual.day }}</div>
+                    
+                    <div class="turnos-folgas-container" style="font-size: 0.75em;">
+                        {# Criar dicionário de escalas por faixa neste dia #}
+                        {% set escalas_por_faixa = {} %}
+                        {% for escala in escalas_diarias %}
+                            {% if escala.data.strftime('%Y-%m-%d') == data_str %}
+                                {% if escala.faixa_horario_id not in escalas_por_faixa %}
+                                    {% set _ = escalas_por_faixa.update({escala.faixa_horario_id: []}) %}
+                                {% endif %}
+                                {% set _ = escalas_por_faixa[escala.faixa_horario_id].append(escala) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {# Mostrar slots de turnos (faixas de horário) #}
+                        {% for faixa in faixas_horario %}
+                            {% set eh_fds = dia_semana_num == 5 or dia_semana_num == 6 %}
+                            {% if (eh_fds and faixa.ativo_fds) or (not eh_fds and faixa.ativo_semana) %}
+                                <div class="turno-slot" 
+                                     data-date="{{ data_str }}"
+                                     data-faixa-id="{{ faixa.id }}"
+                                     ondrop="dropTurno(event)" 
+                                     ondragover="allowDrop(event)"
+                                     ondragleave="removeDragOver(event)">
+                                    <span class="turno-label">{{ faixa.hora_inicio }}-{{ faixa.hora_fim }}</span>
+                                    {% if faixa.id in escalas_por_faixa %}
+                                        {% for escala in escalas_por_faixa[faixa.id] %}
+                                            <span class="func-badge" 
+                                                  draggable="true"
+                                                  ondragstart="dragFunc(event)"
+                                                  data-funcionario-id="{{ escala.funcionario_id }}"
+                                                  data-escala-id="{{ escala.id }}">
+                                                {{ escala.funcionario.nome }}
+                                                <span class="remove-btn" onclick="removerEscala({{ escala.id }}, '{{ data_str }}')">×</span>
+                                            </span>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {# Slot de folgas #}
+                        <div class="folga-slot"
+                             data-date="{{ data_str }}"
+                             ondrop="dropFolga(event)" 
+                             ondragover="allowDrop(event)"
+                             ondragleave="removeDragOver(event)">
+                            <span class="turno-label">💤 Folga</span>
+                            {% for folga in folgas %}
+                                {% if folga.data.strftime('%Y-%m-%d') == data_str %}
+                                    <span class="folga-badge"
+                                          draggable="true"
+                                          ondragstart="dragFunc(event)"
+                                          data-funcionario-id="{{ folga.funcionario_id }}"
+                                          data-folga-id="{{ folga.id }}">
+                                        {{ folga.funcionario.nome }}
+                                        <span class="remove-btn" onclick="removerFolga({{ folga.id }})">×</span>
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        
+                        {# Mostrar férias #}
+                        {% for feria in ferias %}
+                            {% if feria.data_inicio.strftime('%Y-%m-%d') <= data_str <= feria.data_fim.strftime('%Y-%m-%d') %}
+                                <div class="ferias-item" style="margin-top: 3px;">
+                                    <i class="bi bi-airplane-fill"></i> {{ feria.funcionario.nome }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </td>
+            {% endif %}
+        {% endfor %}
+        </tr>
+    {% endfor %}
+{% endmacro %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin-calendario.js') }}"></script>
+{% endblock %}

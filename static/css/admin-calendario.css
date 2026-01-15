@@ -1,0 +1,175 @@
+.calendar-container {
+    overflow-x: auto;
+}
+
+.calendar-table {
+    min-width: 800px;
+}
+
+.calendar-table th {
+    text-align: center;
+    background-color: #f8f9fa;
+    padding: 10px;
+}
+
+.calendar-table td {
+    min-width: 180px;
+    min-height: 200px;
+    vertical-align: top;
+    border: 1px solid #dee2e6;
+    padding: 5px;
+    position: relative;
+}
+
+.day-number {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+.weekend {
+    background-color: #fff3cd;
+}
+
+.blocked-day {
+    background-color: #f8d7da !important;
+}
+
+.trabalhando-item {
+    background-color: #cfe2ff;
+    border: 1px solid #9ec5fe;
+    border-radius: 3px;
+    padding: 2px 5px;
+    margin: 2px 0;
+    font-size: 0.85em;
+    color: #084298;
+    font-weight: 500;
+}
+
+.folga-item {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 3px;
+    padding: 2px 5px;
+    margin: 2px 0;
+    font-size: 0.85em;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #856404;
+}
+
+.ferias-item {
+    background-color: #f8d7da;
+    border: 1px solid #f5c2c7;
+    border-radius: 3px;
+    padding: 2px 5px;
+    margin: 2px 0;
+    font-size: 0.85em;
+    color: #842029;
+}
+
+.btn-block-day {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    padding: 2px 6px;
+    font-size: 0.7em;
+}
+
+.funcionario-badge {
+    cursor: move;
+    margin: 2px;
+    display: inline-block;
+}
+
+.dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+    min-height: 50px;
+}
+
+.dropzone.drag-over {
+    background-color: #e7f3ff;
+    border-color: #0d6efd;
+}
+
+.today {
+    background-color: #d4edda !important;
+}
+
+.turno-slot {
+    background-color: #f8f9fa;
+    border: 1px dashed #ced4da;
+    border-radius: 3px;
+    padding: 3px;
+    margin: 2px 0;
+    font-size: 0.85em;
+    min-height: 28px;
+}
+
+.turno-slot.drag-over {
+    background-color: #e7f3ff;
+    border-color: #0d6efd;
+    border-style: solid;
+}
+
+.turno-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.85em;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.func-badge {
+    display: inline-block;
+    background-color: #0d6efd;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    margin: 1px;
+    cursor: move;
+    position: relative;
+}
+
+.func-badge:hover {
+    background-color: #0b5ed7;
+}
+
+.func-badge .remove-btn {
+    margin-left: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.folga-slot {
+    background-color: #fff3cd;
+    border: 1px dashed #ffc107;
+    border-radius: 3px;
+    padding: 3px;
+    margin: 3px 0;
+    font-size: 0.85em;
+    min-height: 28px;
+}
+
+.folga-slot.drag-over {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    border-style: solid;
+}
+
+.folga-badge {
+    display: inline-block;
+    background-color: #ffc107;
+    color: #000;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    margin: 1px;
+    cursor: move;
+}

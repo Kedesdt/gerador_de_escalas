@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if funcionario %}Editar{% else %}Novo{% endif %} Funcionário{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>
+            <i class="bi bi-person"></i> 
+            {% if funcionario %}Editar{% else %}Novo{% endif %} Funcionário
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="nome" name="nome" 
+                               value="{% if funcionario %}{{ funcionario.nome }}{% endif %}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="preferencia_folga" class="form-label">Preferência de Folga</label>
+                        <select class="form-select" id="preferencia_folga" name="preferencia_folga">
+                            <option value="">Selecione...</option>
+                            <option value="domingo" {% if funcionario and funcionario.preferencia_folga == 'domingo' %}selected{% endif %}>Domingo</option>
+                            <option value="segunda" {% if funcionario and funcionario.preferencia_folga == 'segunda' %}selected{% endif %}>Segunda-feira</option>
+                            <option value="terca" {% if funcionario and funcionario.preferencia_folga == 'terca' %}selected{% endif %}>Terça-feira</option>
+                            <option value="quarta" {% if funcionario and funcionario.preferencia_folga == 'quarta' %}selected{% endif %}>Quarta-feira</option>
+                            <option value="quinta" {% if funcionario and funcionario.preferencia_folga == 'quinta' %}selected{% endif %}>Quinta-feira</option>
+                            <option value="sexta" {% if funcionario and funcionario.preferencia_folga == 'sexta' %}selected{% endif %}>Sexta-feira</option>
+                            <option value="sabado" {% if funcionario and funcionario.preferencia_folga == 'sabado' %}selected{% endif %}>Sábado</option>
+                        </select>
+                        <small class="text-muted">Dia preferencial para folga semanal</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="horario_inicio" class="form-label">Horário de Início *</label>
+                            <input type="time" class="form-control" id="horario_inicio" name="horario_inicio" 
+                                   value="{% if funcionario %}{{ funcionario.horario_inicio }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="horario_fim" class="form-label">Horário de Término *</label>
+                            <input type="time" class="form-control" id="horario_fim" name="horario_fim" 
+                                   value="{% if funcionario %}{{ funcionario.horario_fim }}{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Salvar
+                        </button>
+                        <a href="{{ url_for('listar_funcionarios') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+.calendar-table {
+    min-width: 800px;
+}
+
+.calendar-table th {
+    text-align: center;
+    background-color: #f8f9fa;
+    padding: 10px;
+}
+
+.calendar-table td {
+    min-width: 120px;
+    min-height: 80px;
+    vertical-align: top;
+    border: 1px solid #dee2e6;
+    padding: 8px;
+}
+
+.day-number {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+.weekend {
+    background-color: #fff3cd;
+}
+
+.today {
+    background-color: #d4edda;
+}
+
+.employee-off {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 3px;
+    padding: 3px 6px;
+    margin: 2px 0;
+    font-size: 0.85em;
+}
+
+.employee-vacation {
+    background-color: #ffeaa7;
+    border: 1px solid #ffd93d;
+    border-radius: 3px;
+    padding: 3px 6px;
+    margin: 2px 0;
+    font-size: 0.85em;
+}
+
+.employee-working {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    border-radius: 3px;
+    padding: 3px 6px;
+    margin: 2px 0;
+    font-size: 0.85em;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.legend-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    margin-right: 5px;
+}

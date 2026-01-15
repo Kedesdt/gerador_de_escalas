@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastrar Férias{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-airplane"></i> Cadastrar Férias</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="funcionario_id" class="form-label">Funcionário *</label>
+                        <select class="form-select" id="funcionario_id" name="funcionario_id" required>
+                            <option value="">Selecione um funcionário...</option>
+                            {% for func in funcionarios %}
+                            <option value="{{ func.id }}">{{ func.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="data_inicio" class="form-label">Data de Início *</label>
+                            <input type="date" class="form-control" id="data_inicio" name="data_inicio" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="data_fim" class="form-label">Data de Término *</label>
+                            <input type="date" class="form-control" id="data_fim" name="data_fim" required>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> As férias serão consideradas automaticamente na geração de escalas.
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Salvar
+                        </button>
+                        <a href="{{ url_for('listar_ferias') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('data_inicio').addEventListener('change', function() {
+    const dataInicio = new Date(this.value);
+    const dataFim = document.getElementById('data_fim');
+    dataFim.min = this.value;
+    
+    // Sugerir 30 dias de férias
+    const dataFimSugerida = new Date(dataInicio);
+    dataFimSugerida.setDate(dataFimSugerida.getDate() + 29);
+    
+    if (!dataFim.value) {
+        dataFim.value = dataFimSugerida.toISOString().split('T')[0];
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualização de Escalas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/visualizacao.css') }}">
+</head>
+<body>
+    {% macro render_calendario(primeiro_dia, ultimo_dia, funcionarios, folgas, ferias, escalas_diarias, hoje) %}
+        {% set data_atual = primeiro_dia %}
+        {% set dias_para_mostrar = [] %}
+        
+        {# Coletar todos os dias do período #}
+        {% for i in range(31) %}
+            {% set nova_data = (primeiro_dia.toordinal() + i)|from_ordinal %}
+            {% if nova_data <= ultimo_dia %}
+                {% set _ = dias_para_mostrar.append(nova_data) %}
+            {% endif %}
+        {% endfor %}
+        
+        {# Encontrar o primeiro domingo antes ou igual ao primeiro dia #}
+        {% set primeiro_dia_semana = primeiro_dia.weekday() %}
+        {% set dias_antes = (primeiro_dia_semana + 1) % 7 %}
+        {% set inicio_calendario = (primeiro_dia.toordinal() - dias_antes)|from_ordinal %}
+        
+        {# Gerar calendário semana por semana #}
+        {% set data_cursor = inicio_calendario %}
+        {% for semana_num in range(6) %}
+            <tr>
+            {% for dia_semana in range(7) %}
+                {% set data_atual = (data_cursor.toordinal() + (semana_num * 7) + dia_semana)|from_ordinal %}
+                
+                {% if data_atual < primeiro_dia or data_atual > ultimo_dia %}
+                    <td class="text-muted" style="background-color: #f8f9fa;">
+                        <div class="day-number text-muted">{{ data_atual.day }}</div>
+                    </td>
+                {% else %}
+                    {% set data_str = data_atual.strftime('%Y-%m-%d') %}
+                    {% set dia_semana_num = data_atual.weekday() %}
+                    {% set eh_fim_de_semana = dia_semana_num == 5 or dia_semana_num == 6 %}
+                    {% set eh_hoje = data_str == hoje.strftime('%Y-%m-%d') %}
+                    
+                    <td class="{% if eh_hoje %}today{% elif eh_fim_de_semana %}weekend{% endif %}">
+                        <div class="day-number">{{ data_atual.day }}</div>
+                        
+                        {# Criar dicionário de escalas por funcionário (lista de faixas) #}
+                        {% set escalas_do_dia = {} %}
+                        {% for escala in escalas_diarias %}
+                            {% if escala.data.strftime('%Y-%m-%d') == data_str %}
+                                {% if escala.funcionario_id not in escalas_do_dia %}
+                                    {% set _ = escalas_do_dia.update({escala.funcionario_id: []}) %}
+                                {% endif %}
+                                {% set _ = escalas_do_dia[escala.funcionario_id].append(escala.faixa_horario) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {# Coletar IDs de funcionários ausentes #}
+                        {% set funcionarios_ausentes = [] %}
+                        {% for folga in folgas %}
+                            {% if folga.data.strftime('%Y-%m-%d') == data_str %}
+                                {% set _ = funcionarios_ausentes.append(folga.funcionario_id) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for feria in ferias %}
+                            {% if feria.data_inicio.strftime('%Y-%m-%d') <= data_str <= feria.data_fim.strftime('%Y-%m-%d') %}
+                                {% set _ = funcionarios_ausentes.append(feria.funcionario_id) %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {# Mostrar funcionários trabalhando com todos os horários #}
+                        {% for func_id, faixas in escalas_do_dia.items() %}
+                            {% if func_id not in funcionarios_ausentes %}
+                                {% for func in funcionarios %}
+                                    {% if func.id == func_id %}
+                                        <div class="employee-working">
+                                            <i class="bi bi-briefcase-fill"></i> {{ func.nome }}
+                                            {% for faixa in faixas %}
+                                                <br><small class="text-muted">{{ faixa.hora_inicio }} - {{ faixa.hora_fim }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {# Mostrar folgas #}
+                        {% for folga in folgas %}
+                            {% if folga.data.strftime('%Y-%m-%d') == data_str %}
+                                <div class="employee-off">
+                                    <i class="bi bi-house-door-fill"></i> {{ folga.funcionario.nome }}
+                                    <br><small class="text-muted">Folga</small>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {# Mostrar férias #}
+                        {% for feria in ferias %}
+                            {% if feria.data_inicio.strftime('%Y-%m-%d') <= data_str <= feria.data_fim.strftime('%Y-%m-%d') %}
+                                <div class="employee-vacation">
+                                    <i class="bi bi-airplane-fill"></i> {{ feria.funcionario.nome }}
+                                    <br><small class="text-muted">Férias</small>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                {% endif %}
+            {% endfor %}
+            </tr>
+        {% endfor %}
+    {% endmacro %}
+
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-calendar-check"></i> Sistema de Escalas - Visualização
+            </span>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-box-arrow-in-right"></i> Admin
+            </a>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h2><i class="bi bi-people"></i> Escala de Trabalho</h2>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="btn-group">
+                            <a href="{{ url_for('visualizar_escalas', ano=ano, mes=mes-1 if mes > 1 else 12) }}" 
+                               class="btn btn-outline-primary">
+                                <i class="bi bi-chevron-left"></i> Anterior
+                            </a>
+                            <button class="btn btn-outline-primary disabled">
+                                {{ ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][mes-1] }} {{ ano }}
+                                <br><small class="text-muted">(12/{{ '%02d'|format(mes) }} a 11/{{ '%02d'|format(mes+1 if mes < 12 else 1) }})</small>
+                            </button>
+                            <a href="{{ url_for('visualizar_escalas', ano=ano, mes=mes+1 if mes < 12 else 1) }}" 
+                               class="btn btn-outline-primary">
+                                Próximo <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3 justify-content-end flex-wrap">
+                            <div class="legend-item">
+                                <div class="legend-box" style="background-color: #d4edda;"></div>
+                                <span>Trabalhando</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box" style="background-color: #d1ecf1;"></div>
+                                <span>Folga</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-box" style="background-color: #ffeaa7;"></div>
+                                <span>Férias</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if alertas %}
+        <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> 
+            <strong>Existem {{ alertas|length }} alerta(s) pendente(s).</strong>
+            <a href="#alertas-section" class="alert-link">Clique aqui para ver detalhes</a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Funcionários</h5>
+                <div class="row">
+                    {% for func in funcionarios %}
+                    <div class="col-md-3 mb-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-circle text-primary me-2"></i>
+                            <div>
+                                <strong>{{ func.nome }}</strong><br>
+                                <small class="text-muted">{{ func.horario_inicio }} - {{ func.horario_fim }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div style="overflow-x: auto;">
+                    <table class="table calendar-table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Dom</th>
+                                <th>Seg</th>
+                                <th>Ter</th>
+                                <th>Qua</th>
+                                <th>Qui</th>
+                                <th>Sex</th>
+                                <th>Sáb</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ render_calendario(primeiro_dia, ultimo_dia, funcionarios, folgas, ferias, escalas_diarias, now().date())|safe }}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if alertas %}
+        <div id="alertas-section" class="card mb-4 border-warning mt-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    Alertas Pendentes ({{ alertas|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning mb-3" role="alert">
+                    <small><i class="bi bi-info-circle"></i> Estes alertas foram gerados automaticamente pelo sistema. Consulte o administrador para mais informações.</small>
+                </div>
+                <div class="list-group">
+                    {% for alerta in alertas %}
+                    <div class="list-group-item
+                        {% if alerta['severidade'] == 'critico' %}list-group-item-danger
+                        {% elif alerta['severidade'] == 'alerta' %}list-group-item-warning
+                        {% else %}list-group-item-info{% endif %}">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                {% if alerta['tipo'] == 'excesso_dias' %}
+                                    <i class="bi bi-calendar-x"></i> Excesso de Dias Trabalhados
+                                {% elif alerta['tipo'] == 'sem_cobertura' %}
+                                    <i class="bi bi-people"></i> Falta de Cobertura
+                                {% endif %}
+                            </h6>
+                            <small>{{ alerta['data_referencia'].strftime('%d/%m/%Y') if alerta['data_referencia'] else 'N/A' }}</small>
+                        </div>
+                        <p class="mb-1">{{ alerta['mensagem'] }}</p>
+                        <small class="text-muted">
+                            Severidade: 
+                            {% if alerta['severidade'] == 'critico' %}🔴 Crítico
+                            {% elif alerta['severidade'] == 'alerta' %}🟡 Alerta
+                            {% else %}🔵 Info{% endif %}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center text-muted">
+            <small>&copy; 2026 Sistema de Escalas. Atualizado em {{ now().strftime('%d/%m/%Y às %H:%M') }}</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
