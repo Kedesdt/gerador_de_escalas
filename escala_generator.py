@@ -570,9 +570,9 @@ def gerar_escalas_com_faixas_horario(admin_id, ano, mes):
 
         # Calcular prioridade das faixas para este dia
         faixas_priorizadas = _calcular_prioridade_faixas(faixas, data_atual, eh_fds)
-        arr = open("log.txt", "a")
-        arr.write(f"Data: {data_atual} - Faixas priorizadas: {faixas_priorizadas}\n")
-        arr.close()
+        # arr = open("log.txt", "a")
+        # arr.write(f"Data: {data_atual} - Faixas priorizadas: {faixas_priorizadas}\n")
+        # arr.close()
 
         # Encontrar melhor alocação para este dia
         melhor_alocacao = _encontrar_melhor_alocacao_dia(
@@ -664,11 +664,11 @@ def _encontrar_melhor_alocacao_dia(
 
     for combinacao in combinacoes:
         pontuacao = _avaliar_combinacao(combinacao, faixas_priorizadas, data_atual)
-        arr = open("log.txt", "a")
-        arr.write(
-            f"Data: {data_atual} - Combinacao: {combinacao} - Pontuacao: {pontuacao}\n"
-        )
-        arr.close()
+        # arr = open("log.txt", "a")
+        # arr.write(
+        #    f"Data: {data_atual} - Combinacao: {combinacao} - Pontuacao: {pontuacao}\n"
+        # )
+        # arr.close()
 
         if pontuacao > melhor_pontuacao:
             melhor_pontuacao = pontuacao
@@ -751,14 +751,6 @@ def _gerar_combinacoes_alocacao(faixas_priorizadas, disponibilidades_por_faixa):
 
     # Gerar todas as combinações
     todas = gerar_recursivo(0, [], set())
-
-    # Log de diagnóstico para conferir total gerado
-    try:
-        arr = open("log.txt", "a")
-        arr.write(f"Total de combinacoes geradas: {len(todas)}\n")
-        arr.close()
-    except Exception:
-        pass
 
     return todas
 
@@ -981,16 +973,18 @@ def _horario_coberto_por_outras_faixas(data, faixa_vazia, todas_faixas):
             if fim_c < inicio_c:  # Período coberto cruza meia-noite
                 # Exemplo: 19:00-01:00 cruza meia-noite
                 # Verifica sobreposição com: 19:00-23:59 E 00:00-01:00
-                
+
                 # Verifica se a faixa vazia (17:00-23:00) sobrepõe com 19:00-23:59
                 if inicio_c <= fim_vazio and fim_vazio > inicio_c:
                     if cobertura_atual is None:
                         cobertura_atual = fim_vazio  # 19:00 cobre até 23:59
                     else:
                         cobertura_atual = max(cobertura_atual, fim_vazio)
-                
+
                 # Verifica se a faixa vazia sobrepõe com 00:00-01:00 (apenas se faixa vazia encostar na meia-noite)
-                if inicio_vazio < time(0, 0) or (inicio_vazio == time(0, 0) and fim_vazio > time(0, 0)):
+                if inicio_vazio < time(0, 0) or (
+                    inicio_vazio == time(0, 0) and fim_vazio > time(0, 0)
+                ):
                     # Faixa vazia começa em ou antes da meia-noite
                     if fim_c > time(0, 0):
                         if cobertura_atual is None:
@@ -1125,7 +1119,7 @@ def verificar_alertas_escalas(admin_id, ano, mes):
             )
 
             # Se não há nenhum funcionário disponível para esta faixa, não gerar alerta
-            #if funcionarios_disponiveis == 0:
+            # if funcionarios_disponiveis == 0:
             #    continue    # Gerar alerta
 
             # Verificar se há alguém alocado
