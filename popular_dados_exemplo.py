@@ -143,6 +143,12 @@ def popular_dados_exemplo():
                 ],  # Semana: 15-21, 17-23, 19-01 | FDS: 13-19, 19-01
             },
             {
+                "nome": "João",
+                "preferencia": "quarta",
+                "horario": "05:00-13:00",
+                "faixas": [0, 1, 6],  # Semana: 05-11, 07-13 | FDS: 07-13
+            },
+            {
                 "nome": "Vinícius",
                 "preferencia": "terca",
                 "horario": "05:00-17:00",
@@ -153,12 +159,6 @@ def popular_dados_exemplo():
                     6,
                     7,
                 ],  # Semana: 05-11, 07-13, 11-17 | FDS: 07-13, 13-19
-            },
-            {
-                "nome": "João",
-                "preferencia": "quarta",
-                "horario": "05:00-13:00",
-                "faixas": [0, 1, 6],  # Semana: 05-11, 07-13 | FDS: 07-13
             },
             {
                 "nome": "Alisson",
@@ -175,8 +175,8 @@ def popular_dados_exemplo():
             {
                 "nome": "Durval",
                 "preferencia": "sexta",
-                "horario": "11:00-19:00",
-                "faixas": [2, 7],  # Semana: 11-17 | FDS: 13-19
+                "horario": "11:00-21:00",
+                "faixas": [2, 3, 7],  # Semana: 11-17 | FDS: 13-19
             },
         ]
 
